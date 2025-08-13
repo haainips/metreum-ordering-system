@@ -1,10 +1,8 @@
 // app/api/category/[id]/route.ts
 
-import { PrismaClient } from "../../../../../generated/prisma";
+import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { optional, z } from "zod";
-
-const prisma = new PrismaClient();
+import { z } from "zod";
 
 const updateMenuSchema = z
     .object({

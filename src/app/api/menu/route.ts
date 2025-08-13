@@ -1,44 +1,46 @@
 // src/app/api/menu/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "../../../../generated/prisma";
+import prisma from "@/lib/prisma";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
 const createMenuSchema = z
-    .object({
-        name: z.string().min(1, "Nama kategori wajib diisi"),
-        description: z.string().min(1, "Deskripsi kategori wajib diisi"),
-        price: z.number().min(1, "Harga kategori wajib diisi"),
-        stock: z.number().min(1, "Stok kategori wajib diisi"),
-        imageUrl: z.string().min(1, "URL gambar kategori wajib diisi"),
-        categoryId: z.number().min(1, "Kategori kategori wajib diisi"),
-    })
-    .strict();
+  .object({
+    name: z.string().min(1, "Nama kategori wajib diisi"),
+    description: z.string().min(1, "Deskripsi kategori wajib diisi"),
+    price: z.number().min(1, "Harga kategori wajib diisi"),
+    stock: z.number().min(1, "Stok kategori wajib diisi"),
+    imageUrl: z.string().min(1, "URL gambar kategori wajib diisi"),
+    categoryId: z.number().min(1, "Kategori kategori wajib diisi"),
+  })
+  .strict();
 
 /**
  * @desc    Mengambil daftar semua menu
  * @route   GET /api/menu
  * @access  Public
  */
-export async function GET() {
-    try {
-        const menuItems = await prisma.menu.findMany({
-            where: {
-                stock: { gt: 0 },
-            },
-        });
-        return NextResponse.json({
-            status: 200,
-            message: "Berhasil mengambil data menu.",
-            data: menuItems,
-        });
-    } catch (error) {
-        return NextResponse.json({
-            status: 500,
-            error: "Gagal mengambil data menu.",
-        });
-    }
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const categoryId = searchParams.get("categoryId");
+    const menuItems = await prisma.menu.findMany({
+      where: {
+        stock: { gt: 0 },
+        ...(categoryId && { categoryId: parseInt(categoryId) }),
+      },
+    });
+    return NextResponse.json({
+      status: 200,
+      message: "Berhasil mengambil data menu.",
+      data: menuItems,
+    });
+  } catch (error) {
+    return NextResponse.json({
+      status: 500,
+      error: "Gagal mengambil data menu.",
+    });
+  }
 }
 
 /**
