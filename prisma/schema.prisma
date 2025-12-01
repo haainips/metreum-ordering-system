@@ -28,7 +28,7 @@ model Menu {
   name        String      @unique
   description String
   price       Float
-  stock       Int         @default(0)
+  available   Boolean     @default(true)
   imageUrl    String?
   categoryId  Int
   createdAt   DateTime    @default(now())
@@ -39,31 +39,44 @@ model Menu {
   @@index([categoryId])
 }
 
+model Table {
+  id        String   @id @default(cuid())
+  number    Int      @unique
+  qrcode    String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  order     Order[]
+}
+
 model Order {
   id           Int      @id @default(autoincrement())
-  orderCode    String   @unique @default(cuid())
+  orderCode    String   @unique
   customerName String?
-  tableNumber  String
-  status       String   @default("pending")
+  tableId      String
+  status       String   @default("PENDING")
   totalPrice   Float
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  table      Table       @relation(fields: [tableId], references: [id], onDelete: Restrict)
   OrderItems OrderItem[]
 }
 
 model OrderItem {
-  id          Int      @id @default(autoincrement())
-  orderId     Int
-  menuItemId  Int
-  quantity    Int
-  priceAtTime Float
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  menuId    Int
+  quantity  Int
+  price     Float
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   order    Order @relation(fields: [orderId], references: [id])
-  menuItem Menu  @relation(fields: [menuItemId], references: [id])
+  menuItem Menu  @relation(fields: [menuId], references: [id])
 
-  @@unique([orderId, menuItemId])
+  @@unique([orderId, menuId])
 }
 
 model User {

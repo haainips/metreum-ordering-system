@@ -3,7 +3,7 @@ import type { NextAuthOptions } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import { compare } from 'bcryptjs';
-import prisma from '@/lib/prisma';
+import prisma from '@/infrastructure/prisma/PrismaClient';
 import { isAdminRole } from './rbac';
 
 const credentialsSchema = z.object({
@@ -18,8 +18,8 @@ export const authOptions: NextAuthOptions = {
     pages: { signIn: '/admin/login', error: '/admin/login' },
     session: { 
         strategy: 'jwt', 
-        maxAge: 60 * 60 * 24 * 7, 
-        updateAge: 60 * 60 * 12 
+        maxAge: 60 * 60 * 6, 
+        updateAge: 60 * 60 * 2 
     },
     secret: process.env.NEXTAUTH_SECRET,
 
@@ -87,6 +87,7 @@ export const authOptions: NextAuthOptions = {
             session.user = {
                 ...(session.user ?? {}),
                 id: token.sub as string,
+                email: token.email as string | undefined,
                 role: (token as any).role as string,
             } as any;
             return session;

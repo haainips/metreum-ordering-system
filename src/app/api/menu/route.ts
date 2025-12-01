@@ -1,7 +1,7 @@
 // src/app/api/menu/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/infrastructure/prisma/PrismaClient";
 import { z } from "zod";
 
 const createMenuSchema = z
@@ -9,7 +9,7 @@ const createMenuSchema = z
     name: z.string().min(1, "Nama kategori wajib diisi"),
     description: z.string().min(1, "Deskripsi kategori wajib diisi"),
     price: z.number().min(1, "Harga kategori wajib diisi"),
-    stock: z.number().min(1, "Stok kategori wajib diisi"),
+    available: z.boolean(),
     imageUrl: z.string().min(1, "URL gambar kategori wajib diisi"),
     categoryId: z.number().min(1, "Kategori kategori wajib diisi"),
   })
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get("categoryId");
     const menuItems = await prisma.menu.findMany({
       where: {
-        stock: { gt: 0 },
+        available: true ,
         ...(categoryId && { categoryId: parseInt(categoryId) }),
       },
     });
@@ -64,14 +64,14 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        const { name, description, price, stock, categoryId } = validation.data;
+        const { name, description, price, available, categoryId } = validation.data;
 
         const newMenu = await prisma.menu.create({
             data: {
                 name,
                 description,
                 price,
-                stock,
+                available,
                 categoryId,
             },
         });

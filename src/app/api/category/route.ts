@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/infrastructure/prisma/PrismaClient";
 import { z } from "zod";
 
 const createCategorySchema = z
